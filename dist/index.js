@@ -155,6 +155,17 @@ export const CTX_RUNTIME_CONTRACT = {
     isBot: ai('server_sim', 'implemented', {
         callbacks: ['initPlayer', 'onAction', 'onTick', 'render', 'view', 'buildSyncState'],
     }),
+    setBotBlackboard: ai('server_sim', 'implemented', {
+        callbacks: ['onAction', 'onTick', 'onPhaseChange'],
+        message: 'ctx.setBotBlackboard(botId, blackboard) lets a server_sim game describe the current bot problem as observations plus legal actions. Use kind: grid, target, or choice instead of hard-coding per-game bot templates.',
+    }),
+    getBotAction: ai('server_sim', 'implemented', {
+        callbacks: ['onAction', 'onTick'],
+        message: 'ctx.getBotAction(botId) returns a deterministic platform-selected legal action from the latest bot blackboard, or null when no action is available.',
+    }),
+    clearBotBlackboard: ai('server_sim', 'implemented', {
+        callbacks: ['onAction', 'onTick', 'onPhaseChange'],
+    }),
     getAsset: core('asset_library', 'fallback'),
     getAssetUrl: core('asset_library', 'fallback'),
     getAssetNames: core('asset_library', 'fallback'),
