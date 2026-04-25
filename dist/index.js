@@ -145,6 +145,16 @@ export const CTX_RUNTIME_CONTRACT = {
     stt: streaming(),
     hostMedia: streaming(),
     getPlayerCount: core('server_sim'),
+    spawnBot: ai('server_sim', 'implemented', {
+        callbacks: ['initState', 'onAction', 'onTick', 'onPhaseChange'],
+        message: 'ctx.spawnBot() is the platform-supported way to add the sharky bot in server_sim games. The bot appears in state.players like a normal participant, but ctx.isBot(id) identifies it.',
+    }),
+    despawnBot: ai('server_sim', 'implemented', {
+        callbacks: ['onAction', 'onTick', 'onPhaseChange'],
+    }),
+    isBot: ai('server_sim', 'implemented', {
+        callbacks: ['initPlayer', 'onAction', 'onTick', 'render', 'view', 'buildSyncState'],
+    }),
     getAsset: core('asset_library', 'fallback'),
     getAssetUrl: core('asset_library', 'fallback'),
     getAssetNames: core('asset_library', 'fallback'),
