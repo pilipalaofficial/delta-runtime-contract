@@ -152,19 +152,32 @@ export const CTX_RUNTIME_CONTRACT = {
   getFlavor: ai('runtime_ai', 'fallback', {
     callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
   }),
-  requestJudge: ai('runtime_ai', 'unsupported', {
+  requestJudge: ai('runtime_ai', 'fallback', {
+    callbacks: ['onAction', 'onTick', 'onPhaseChange'],
     message:
-      'server_sim does not support ctx.requestJudge yet. Use deterministic game logic, or switch away from server_sim until the authoritative judge lane is implemented.',
+      'server_sim supports ctx.requestJudge as a fallback-safe lane. Authoritative gameplay must handle failed/expired/unresolved verdicts deterministically and must not auto-accept on AI failure.',
   }),
-  getJudge: ai('runtime_ai', 'unsupported', {
-    message: 'server_sim does not support ctx.getJudge yet.',
+  getJudge: ai('runtime_ai', 'fallback', {
+    callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
+    message: 'server_sim ctx.getJudge may return failed/expired/unresolved when runtime AI is unavailable.',
   }),
-  requestDirector: ai('runtime_ai', 'unsupported', {
+  requestDirector: ai('runtime_ai', 'fallback', {
+    callbacks: ['onAction', 'onTick', 'onPhaseChange'],
     message:
-      'server_sim does not support ctx.requestDirector yet. Dynamic rule changes must be deterministic or handled by a future authoritative director lane.',
+      'server_sim supports ctx.requestDirector as a fallback-safe lane. Games must continue unchanged when no proposal is ready.',
   }),
-  getDirectorProposal: ai('runtime_ai', 'unsupported', {
-    message: 'server_sim does not support ctx.getDirectorProposal yet.',
+  getDirectorProposal: ai('runtime_ai', 'fallback', {
+    callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
+    message: 'server_sim ctx.getDirectorProposal may return failed/expired without a proposal.',
+  }),
+  requestContent: ai('runtime_ai', 'fallback', {
+    callbacks: ['onAction', 'onTick', 'onPhaseChange'],
+    requiresAny: ['fallbackData', 'fallbackText'],
+    message:
+      'server_sim allows ctx.requestContent only with deterministic fallbackData or fallbackText so generated content can resolve without live runtime AI.',
+  }),
+  getContent: ai('runtime_ai', 'fallback', {
+    callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
   }),
   logAIEvent: ai('client_local', 'noop'),
 

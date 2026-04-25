@@ -354,6 +354,24 @@ export declare const CTX_RUNTIME_CONTRACT: {
         requiresAny?: readonly string[];
         message?: string;
     };
+    readonly requestContent: {
+        capability: CapabilityId;
+        lane: RuntimeLane;
+        serverSim: RuntimeSupport;
+        authorityModes: readonly AuthorityMode[];
+        callbacks?: readonly string[];
+        requiresAny?: readonly string[];
+        message?: string;
+    };
+    readonly getContent: {
+        capability: CapabilityId;
+        lane: RuntimeLane;
+        serverSim: RuntimeSupport;
+        authorityModes: readonly AuthorityMode[];
+        callbacks?: readonly string[];
+        requiresAny?: readonly string[];
+        message?: string;
+    };
     readonly logAIEvent: {
         capability: CapabilityId;
         lane: RuntimeLane;
