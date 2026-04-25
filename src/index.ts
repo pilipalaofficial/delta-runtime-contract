@@ -1,55 +1,250 @@
+export type CapabilityId = 'core' | 'audio' | 'rtc' | 'ai' | 'relay' | 'ui' | 'streaming'
+export type RuntimeLane =
+  | 'client_local'
+  | 'bridge'
+  | 'server_sim'
+  | 'runtime_ai'
+  | 'asset_library'
+  | 'render_helper'
+  | 'pure_helper'
+export type AuthorityMode = 'host_client' | 'server_sim'
 export type RuntimeSupport = 'implemented' | 'fallback' | 'noop' | 'unsupported'
 
 export interface RuntimeCapabilityContract {
+  readonly capability: CapabilityId
+  readonly lane: RuntimeLane
   readonly serverSim: RuntimeSupport
+  readonly authorityModes: readonly AuthorityMode[]
   readonly callbacks?: readonly string[]
   readonly requiresAny?: readonly string[]
   readonly message?: string
 }
 
+const BOTH = ['host_client', 'server_sim'] as const
+const HOST_ONLY = ['host_client'] as const
+
+const core = (
+  lane: RuntimeLane,
+  serverSim: RuntimeSupport = 'implemented',
+  extra: Partial<RuntimeCapabilityContract> = {},
+) => ({
+  capability: 'core',
+  lane,
+  serverSim,
+  authorityModes: BOTH,
+  ...extra,
+}) satisfies RuntimeCapabilityContract
+
+const relay = (
+  lane: RuntimeLane,
+  serverSim: RuntimeSupport = 'implemented',
+  extra: Partial<RuntimeCapabilityContract> = {},
+) => ({
+  capability: 'relay',
+  lane,
+  serverSim,
+  authorityModes: BOTH,
+  ...extra,
+}) satisfies RuntimeCapabilityContract
+
+const ui = (
+  serverSim: RuntimeSupport = 'noop',
+  extra: Partial<RuntimeCapabilityContract> = {},
+) => ({
+  capability: 'ui',
+  lane: 'client_local',
+  serverSim,
+  authorityModes: BOTH,
+  ...extra,
+}) satisfies RuntimeCapabilityContract
+
+const audio = (
+  serverSim: RuntimeSupport = 'noop',
+  extra: Partial<RuntimeCapabilityContract> = {},
+) => ({
+  capability: 'audio',
+  lane: 'bridge',
+  serverSim,
+  authorityModes: BOTH,
+  ...extra,
+}) satisfies RuntimeCapabilityContract
+
+const ai = (
+  lane: RuntimeLane,
+  serverSim: RuntimeSupport,
+  extra: Partial<RuntimeCapabilityContract> = {},
+) => ({
+  capability: 'ai',
+  lane,
+  serverSim,
+  authorityModes: BOTH,
+  ...extra,
+}) satisfies RuntimeCapabilityContract
+
+const rtc = (
+  serverSim: RuntimeSupport = 'unsupported',
+  extra: Partial<RuntimeCapabilityContract> = {},
+) => ({
+  capability: 'rtc',
+  lane: 'bridge',
+  serverSim,
+  authorityModes: HOST_ONLY,
+  message: 'server_sim does not support realtime media/RTC ctx APIs. Use them only in client-local rendering or switch authorityMode.',
+  ...extra,
+}) satisfies RuntimeCapabilityContract
+
+const streaming = (
+  serverSim: RuntimeSupport = 'unsupported',
+  extra: Partial<RuntimeCapabilityContract> = {},
+) => ({
+  capability: 'streaming',
+  lane: 'bridge',
+  serverSim,
+  authorityModes: HOST_ONLY,
+  message: 'server_sim does not support streaming/STT ctx APIs yet. Use deterministic text/input state or switch authorityMode.',
+  ...extra,
+}) satisfies RuntimeCapabilityContract
+
 export const CTX_RUNTIME_CONTRACT = {
-  getGameData: {
-    serverSim: 'implemented',
+  getLocalUserId: core('server_sim'),
+  getRoomInfo: relay('bridge', 'fallback'),
+  isHost: relay('server_sim'),
+  getNetworkProfile: relay('client_local', 'fallback'),
+  getPredictionStats: relay('client_local', 'noop'),
+  getRelayRTT: relay('bridge', 'noop'),
+  sendAction: relay('bridge', 'implemented', { callbacks: ['customActions', 'view', 'onTextInput'] }),
+  sendDecisiveEvent: relay('bridge', 'fallback'),
+  getPendingDecisiveEvents: relay('client_local', 'noop'),
+  getPhase: core('server_sim'),
+  getState: core('server_sim'),
+  _inited: core('client_local', 'noop'),
+
+  W: core('render_helper', 'fallback'),
+  H: core('render_helper', 'fallback'),
+  hasWorldSpace: core('render_helper', 'fallback'),
+  worldW: core('render_helper', 'fallback'),
+  worldH: core('render_helper', 'fallback'),
+  scaleX: core('render_helper', 'fallback'),
+  scaleY: core('render_helper', 'fallback'),
+  toScreenX: core('render_helper', 'fallback'),
+  toScreenY: core('render_helper', 'fallback'),
+  toWorldX: core('render_helper', 'fallback'),
+  toWorldY: core('render_helper', 'fallback'),
+  dpr: core('render_helper', 'fallback'),
+
+  PHASE_LOBBY: core('pure_helper'),
+  PHASE_PLAYING: core('pure_helper'),
+  PHASE_RESULT: core('pure_helper'),
+  START_ACTION: core('pure_helper'),
+  canStartGame: core('server_sim'),
+  requestStartGame: relay('bridge', 'fallback'),
+  getGameData: core('server_sim', 'implemented', {
     callbacks: ['initState', 'initPlayer', 'onAction', 'onTick', 'render', 'view', 'buildSyncState'],
-  },
-  sendAction: {
-    serverSim: 'implemented',
-    callbacks: ['customActions', 'view'],
-  },
-  requestFlavor: {
-    serverSim: 'fallback',
+  }),
+  hasCapability: core('client_local', 'fallback'),
+
+  requestFlavor: ai('runtime_ai', 'fallback', {
     callbacks: ['onAction', 'onTick', 'onPhaseChange'],
     requiresAny: ['fallbackText', 'fallbackUrl'],
     message:
       'server_sim allows ctx.requestFlavor only with a deterministic fallback (fallbackText or fallbackUrl), because sim-service must be able to resolve AI flavor lanes headlessly.',
-  },
-  getFlavor: {
-    serverSim: 'fallback',
+  }),
+  getFlavor: ai('runtime_ai', 'fallback', {
     callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
-  },
-  requestJudge: {
-    serverSim: 'unsupported',
+  }),
+  requestJudge: ai('runtime_ai', 'unsupported', {
     message:
       'server_sim does not support ctx.requestJudge yet. Use deterministic game logic, or switch away from server_sim until the authoritative judge lane is implemented.',
-  },
-  getJudge: {
-    serverSim: 'unsupported',
+  }),
+  getJudge: ai('runtime_ai', 'unsupported', {
     message: 'server_sim does not support ctx.getJudge yet.',
-  },
-  requestDirector: {
-    serverSim: 'unsupported',
+  }),
+  requestDirector: ai('runtime_ai', 'unsupported', {
     message:
       'server_sim does not support ctx.requestDirector yet. Dynamic rule changes must be deterministic or handled by a future authoritative director lane.',
-  },
-  getDirectorProposal: {
-    serverSim: 'unsupported',
+  }),
+  getDirectorProposal: ai('runtime_ai', 'unsupported', {
     message: 'server_sim does not support ctx.getDirectorProposal yet.',
-  },
-  setHud: { serverSim: 'noop' },
-  setUiTree: { serverSim: 'noop' },
-  setTextInput: { serverSim: 'noop' },
-  setBgm: { serverSim: 'noop' },
-  stopBgm: { serverSim: 'noop' },
-  playSound: { serverSim: 'noop' },
+  }),
+  logAIEvent: ai('client_local', 'noop'),
+
+  onStreamEvent: streaming(),
+  bindStream: streaming(),
+  unbindStream: streaming(),
+  settleMatch: relay('bridge', 'fallback'),
+
+  showTextInput: ui(),
+  hideTextInput: ui(),
+  getPlayers: core('server_sim'),
+  getPlayer: core('server_sim'),
+  getLocalPlayer: core('server_sim'),
+  requestProfiles: ui('noop'),
+
+  playSound: audio(),
+  stopSound: audio(),
+  setBgm: audio(),
+  stopBgm: audio(),
+  setVolume: audio(),
+
+  startRtc: rtc(),
+  stopRtc: rtc(),
+  toggleAudio: rtc(),
+  toggleVideo: rtc(),
+  getRtcState: rtc(),
+  getRtcSpeaking: rtc(),
+  media: rtc(),
+  startMedia: rtc(),
+  stopMedia: rtc(),
+  toggleMic: rtc(),
+  toggleCamera: rtc(),
+  getVideoFrame: rtc(),
+  listVideoUsers: rtc(),
+  drawVideo: rtc(),
+
+  startStt: streaming(),
+  stopStt: streaming(),
+  setSttProvider: streaming(),
+  getSttState: streaming(),
+  getSttProvider: streaming(),
+  listSttProviders: streaming(),
+  stt: streaming(),
+  hostMedia: streaming(),
+
+  getPlayerCount: core('server_sim'),
+  getAsset: core('asset_library', 'fallback'),
+  getAssetUrl: core('asset_library', 'fallback'),
+  getAssetNames: core('asset_library', 'fallback'),
+  isRealPlayer: core('server_sim'),
+  isSpectator: core('server_sim'),
+  getMaxPlayers: core('server_sim'),
+
+  fillRoundRect: core('render_helper', 'noop'),
+  strokeRoundRect: core('render_helper', 'noop'),
+  drawCard: core('render_helper', 'noop'),
+  drawButton: core('render_helper', 'noop'),
+  drawProgressBar: core('render_helper', 'noop'),
+  drawText: core('render_helper', 'noop'),
+  drawCircle: core('render_helper', 'noop'),
+  fillGradient: core('render_helper', 'noop'),
+  drawSprite: core('render_helper', 'noop'),
+  drawBackground: core('render_helper', 'noop'),
+  drawTile: core('render_helper', 'noop'),
+  screenShake: core('render_helper', 'noop'),
+
+  setUiTree: ui(),
+  setHud: ui(),
+  clearHud: ui(),
+  setTextInput: ui(),
+  setVideo: ui('noop'),
+
+  locale: core('client_local', 'fallback'),
+  fontStack: core('render_helper', 'fallback'),
+  t: core('pure_helper'),
+  formatNumber: core('pure_helper'),
+  lerp: core('pure_helper'),
+  easeOut: core('pure_helper'),
+  easeInOut: core('pure_helper'),
+  lerpColor: core('pure_helper'),
 } as const satisfies Record<string, RuntimeCapabilityContract>
 
+export type CtxRuntimeApi = keyof typeof CTX_RUNTIME_CONTRACT
