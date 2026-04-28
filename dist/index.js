@@ -214,6 +214,12 @@ export const CTX_RUNTIME_CONTRACT = {
     stepProjectiles: core('pure_helper', 'implemented', {
         callbacks: ['onTick'],
     }),
+    throwProjectileAt: core('pure_helper', 'implemented', {
+        callbacks: ['onAction'],
+    }),
+    stepProjectileHits: core('pure_helper', 'implemented', {
+        callbacks: ['onTick'],
+    }),
     circleHit: core('pure_helper', 'implemented', {
         callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
     }),
