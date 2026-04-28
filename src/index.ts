@@ -290,6 +290,15 @@ export const CTX_RUNTIME_CONTRACT = {
   circleHit: core('pure_helper', 'implemented', {
     callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
   }),
+  vectorToward: core('pure_helper', 'implemented', {
+    callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
+  }),
+  moveToward: core('pure_helper', 'implemented', {
+    callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
+  }),
+  gridDirToward: core('pure_helper', 'implemented', {
+    callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
+  }),
   lerpColor: core('pure_helper'),
 } as const satisfies Record<string, RuntimeCapabilityContract>
 
