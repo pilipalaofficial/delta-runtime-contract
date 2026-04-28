@@ -229,6 +229,11 @@ export const CTX_RUNTIME_CONTRACT = {
     message:
       'ctx.spawnBot() is the platform-supported way to add the sharky bot in server_sim games. The bot appears in state.players like a normal participant, but ctx.isBot(id) identifies it.',
   }),
+  ensureBotBackfill: ai('server_sim', 'implemented', {
+    callbacks: ['onAction', 'onTick', 'onPhaseChange'],
+    message:
+      'ctx.ensureBotBackfill(...) is the restart-safe platform bot lifecycle primitive. Call it every active tick/start with a deterministic blackboard so missing AI participants are rehydrated instead of relying on one-shot state flags.',
+  }),
   despawnBot: ai('server_sim', 'implemented', {
     callbacks: ['onAction', 'onTick', 'onPhaseChange'],
   }),
