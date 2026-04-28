@@ -1047,6 +1047,33 @@ export declare const CTX_RUNTIME_CONTRACT: {
         requiresAny?: readonly string[];
         message?: string;
     };
+    readonly projectileToward: {
+        capability: CapabilityId;
+        lane: RuntimeLane;
+        serverSim: RuntimeSupport;
+        authorityModes: readonly AuthorityMode[];
+        callbacks?: readonly string[];
+        requiresAny?: readonly string[];
+        message?: string;
+    };
+    readonly stepProjectiles: {
+        capability: CapabilityId;
+        lane: RuntimeLane;
+        serverSim: RuntimeSupport;
+        authorityModes: readonly AuthorityMode[];
+        callbacks?: readonly string[];
+        requiresAny?: readonly string[];
+        message?: string;
+    };
+    readonly circleHit: {
+        capability: CapabilityId;
+        lane: RuntimeLane;
+        serverSim: RuntimeSupport;
+        authorityModes: readonly AuthorityMode[];
+        callbacks?: readonly string[];
+        requiresAny?: readonly string[];
+        message?: string;
+    };
     readonly lerpColor: {
         capability: CapabilityId;
         lane: RuntimeLane;

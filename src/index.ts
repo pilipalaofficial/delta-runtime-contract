@@ -281,6 +281,15 @@ export const CTX_RUNTIME_CONTRACT = {
   lerp: core('pure_helper'),
   easeOut: core('pure_helper'),
   easeInOut: core('pure_helper'),
+  projectileToward: core('pure_helper', 'implemented', {
+    callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
+  }),
+  stepProjectiles: core('pure_helper', 'implemented', {
+    callbacks: ['onTick'],
+  }),
+  circleHit: core('pure_helper', 'implemented', {
+    callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
+  }),
   lerpColor: core('pure_helper'),
 } as const satisfies Record<string, RuntimeCapabilityContract>
 
