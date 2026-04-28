@@ -96,7 +96,7 @@ export const CTX_RUNTIME_CONTRACT = {
     }),
     requestJudge: ai('runtime_ai', 'fallback', {
         callbacks: ['onAction', 'onTick', 'onPhaseChange'],
-        message: 'server_sim supports ctx.requestJudge as a fallback-safe lane. Authoritative gameplay must handle failed/expired/unresolved verdicts deterministically and must not auto-accept on AI failure.',
+        message: 'server_sim supports ctx.requestJudge as a fallback-safe lane. Requests must include fallbackVerdict/fallbackReason so authoritative gameplay handles Runtime AI failure deterministically and does not expose provider failure text.',
     }),
     getJudge: ai('runtime_ai', 'fallback', {
         callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
@@ -209,6 +209,10 @@ export const CTX_RUNTIME_CONTRACT = {
     fontStack: core('render_helper', 'fallback'),
     t: core('pure_helper'),
     formatNumber: core('pure_helper'),
+    systems: core('pure_helper', 'implemented', {
+        callbacks: ['onAction', 'onTick', 'render', 'view', 'buildSyncState'],
+        message: 'ctx.systems exposes deterministic gameplay primitives (grid movement, projectiles, items/effects, motion, bot backfill) so generated games do not hand-roll platform-level glue.',
+    }),
     lerp: core('pure_helper'),
     easeOut: core('pure_helper'),
     easeInOut: core('pure_helper'),
